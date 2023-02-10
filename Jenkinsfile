@@ -4,21 +4,7 @@ pipeline {
 
   agent any
   stages {
-    stage('mvn') {
-      steps {
-      sh 'export MAVEN_HOME=/opt/maven'
-      sh 'export PATH=$PATH:$MAVEN_HOME/bin'
-      sh 'mvn --version'
-     }
-    }
-    stage('Build') {
-      steps {
-        echo 'Building..'
 
-        sh 'mvn clean package'
-        
-      }
-    }
     stage('Create Container Image') {
       steps {
         echo 'Create Container Image..'
@@ -32,7 +18,7 @@ pipeline {
                     openshift.newBuild("--name=codelikethewind", "--docker-image=registry.redhat.io/jboss-eap-7/eap74-openjdk8-openshift-rhel7", "--binary")
                 }
 
-                openshift.selector("bc", "codelikethewind").startBuild("--from-file=target/simple-servlet-0.0.1-SNAPSHOT.war", "--follow")
+                openshift.selector("bc", "codelikethewind").startBuild()
 
             }
 
