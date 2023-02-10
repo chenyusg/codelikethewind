@@ -3,8 +3,20 @@
 pipeline {
 
   agent any
+  environment {
+    SPECTRAL_DSN = credentials('spectral-dsn')
+  }
   stages {
-
+    stage('install Spectral') {
+      steps {
+        sh "curl -L 'https://spectral-eu.checkpoint.com/latest/x/sh?dsn=$SPECTRAL_DSN' | sh"
+      }
+    }
+    stage('scan for issues') {
+      steps {
+        sh "$HOME/.spectral/spectral scan --ok  --include-tags base,audit"
+      }
+    }
     stage('Create Container Image') {
       steps {
         echo 'Create Container Image..'
@@ -19,31 +31,6 @@ pipeline {
                 }
 
                 openshift.selector("bc", "codelikethewind").startBuild()
-
-            }
-
-          }
-        }
-      }
-    }
-    stage('Deploy') {
-      steps {
-        echo 'Deploying....'
-        script {
-          openshift.withCluster() {
-            openshift.withProject("jenkins") {
-
-              def deployment = openshift.selector("dc", "codelikethewind")
-
-              if(!deployment.exists()){
-                openshift.newApp('codelikethewind', "--as-deployment-config").narrow('svc').expose()
-              }
-
-              timeout(5) { 
-                openshift.selector("dc", "codelikethewind").related('pods').untilEach(1) {
-                  return (it.object().status.phase == "Running")
-                  }
-                }
 
             }
 
