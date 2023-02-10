@@ -5,9 +5,11 @@ pipeline {
   agent any
   stages {
     stage('mvn') {
+      steps {
       sh 'export MAVEN_HOME=/opt/maven'
       sh 'export PATH=$PATH:$MAVEN_HOME/bin'
       sh 'mvn --version'
+     }
     }
     stage('Build') {
       steps {
